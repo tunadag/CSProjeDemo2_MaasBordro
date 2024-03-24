@@ -1,57 +1,41 @@
 package com.tunadag;
 
-import com.tunadag.model.Memur;
 import com.tunadag.model.Personel;
 import com.tunadag.service.DosyaOku;
 import com.tunadag.service.MaasBordro;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Main {
+public class Program {
     public static void main(String[] args) {
-        // JSON dosyasından personel bilgilerini oku
-        List<Personel> personelListesi = DosyaOku.personelBilgileriniOku("src/main/java/com/tunadag/utils/personel.json");
-
-        // Bordro tarihini kullanıcıdan al
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Bordro tarihini giriniz (örneğin MART 2024): ");
-        String bordroTarihi = scanner.nextLine();
 
-        // 150 saatten az çalışanları tutacak bir liste oluştur
-        List<Personel> azCalisanlar = new ArrayList<>();
+        while (true) {
+            System.out.println("1. Aylık Maaş Bordrosu Oluşturma");
+            System.out.println("2. Maaş Raporu Görüntüleme");
+            System.out.println("3. Çıkış");
+            System.out.print("Seçiminizi yapınız: ");
+            int secim = scanner.nextInt();
+            scanner.nextLine(); // Buffer temizleme
 
-        // Personel listesindeki her bir personel için maaş hesapla ve dosyaya kaydet
-        for (Personel personel : personelListesi) {
-            System.out.print(personel.getIsim() + " " + personel.getSoyisim() + " için çalışma saati giriniz: ");
-            int calismaSaati = scanner.nextInt();
-            scanner.nextLine(); // Boş satırı oku
+            if (secim == 1) {
+                List<Personel> personelListesi = DosyaOku.dosyadanOku("src/main/java/com/tunadag/utils/personel.json");
+                System.out.print("Bordro tarihini giriniz (örneğin MART 2024): ");
+                String bordroTarihi = scanner.nextLine();
 
-            // 150 saatten az çalışanları kontrol et ve listeye ekle
-            if (calismaSaati < 150) {
-                azCalisanlar.add(personel);
+                for (Personel personel : personelListesi) {
+                    MaasBordro.maasHesapla(personel, bordroTarihi);
+                }
+            } else if (secim == 2) {
+                System.out.println("Maaş Raporları:");
+                DosyaOku.tumRaporlariOku();
+            } else if (secim == 3) {
+                System.out.println("Programdan çıkılıyor...");
+                break;
+            } else {
+                System.out.println("Geçersiz seçim. Lütfen tekrar deneyin.");
             }
-
-            MaasBordro.maasHesapla(personel, calismaSaati, bordroTarihi);
-        }
-
-        // Personel listesindeki her bir personelin raporunu ekrana yazdır
-        for (Personel personel : personelListesi) {
-            System.out.println(personel.getIsim() + " " + personel.getSoyisim() + " için maaş raporu:");
-            String maasDosyaAdi = "src/main/java/com/tunadag/utils/maaslar/" + personel.getIsim() + "_" + bordroTarihi.replace(" ", "_") + ".json";
-            try {
-                DosyaOku.maasRaporunuYazdir(maasDosyaAdi);
-            } catch (Exception e) {
-                System.out.println("Maaş raporu bulunamadı.");
-            }
-            System.out.println();
-        }
-
-        // 150 saatten az çalışan personelleri ekrana yazdır
-        System.out.println("150 saatten az çalışan personeller:");
-        for (Personel azCalisan : azCalisanlar) {
-            System.out.println(azCalisan.getIsim() + " " + azCalisan.getSoyisim());
         }
     }
 }
